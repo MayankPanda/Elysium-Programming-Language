@@ -7,6 +7,14 @@ enum TokenType {
     PRINT,
     STRING,
     CHAR,
+    INT,
+    INT_LITERAL,
+    CHAR_LITERAL,
+    DOUBLE_LITERAL,
+    DOUBLE,
+    BOOL,
+    TRUE,
+    FALSE,
     IDENTIFIER,
     ASSIGN,
     LPAREN,
@@ -52,7 +60,9 @@ private:
 
     void statement_list() {
     while (current_index_ < tokens_.size() && tokens_[current_index_].type != END) {
-        if (tokens_[current_index_].type == STRING || tokens_[current_index_].type == CHAR) {
+        if (tokens_[current_index_].type == STRING || tokens_[current_index_].type == CHAR ||
+            tokens_[current_index_].type == INT || tokens_[current_index_].type == DOUBLE ||
+            tokens_[current_index_].type == BOOL) {
             variable_declaration();
         } else if (tokens_[current_index_].type == INPUT) {
             input_statement();
@@ -67,23 +77,62 @@ private:
 }
 
     void variable_declaration() {
-        TokenType type = tokens_[current_index_].type;
-        consume(type); // Consume the variable type (STRING or CHAR)
+    TokenType type = tokens_[current_index_].type;
+    consume(type); // Consume the variable type (STRING, CHAR, INT, DOUBLE, or BOOL)
 
-        std::string variable_name = tokens_[current_index_].lexeme;
-        consume(IDENTIFIER);
-        consume(ASSIGN);
-        std::string value = tokens_[current_index_].lexeme;
-        if (type == STRING) {
-            consume(STRING_LITERAL);
-        } else if (type == CHAR) {
-            consume(STRING_LITERAL);
+    std::string variable_name = tokens_[current_index_].lexeme;
+    consume(IDENTIFIER);
+    consume(ASSIGN);
+    std::string value = tokens_[current_index_].lexeme;
+    if (type == STRING || type == CHAR) {
+        consume(STRING_LITERAL);
+        if (type == CHAR) {
             // Extract the first character from the CHAR string literal
             value = value.substr(1, 1);
         }
-        consume(SEMICOLON);
+    } else if (type == INT || type == DOUBLE) {
+        if (tokens_[current_index_].type == INT_LITERAL || tokens_[current_index_].type == DOUBLE_LITERAL) {
+            value = tokens_[current_index_].lexeme;
+            consume(tokens_[current_index_].type);
+        } else {
+            std::cerr << "Error: Expected INT_LITERAL or DOUBLE_LITERAL, but got: "
+                      << tokens_[current_index_].type << " with lexeme: "
+                      << tokens_[current_index_].lexeme << std::endl;
+            exit(1);
+        }
+    } else if (type == BOOL) {
+        if (tokens_[current_index_].type == TRUE || tokens_[current_index_].type == FALSE) {
+            value = tokens_[current_index_].lexeme;
+            consume(tokens_[current_index_].type);
+        } else {
+            std::cerr << "Error: Expected True or False, but got: "
+                      << tokens_[current_index_].type << " with lexeme: "
+                      << tokens_[current_index_].lexeme << std::endl;
+            exit(1);
+        }
+    }
+    consume(SEMICOLON);
 
-        std::cout << "Variable Declaration: " << variable_name << ", Type: " << type << ", Value: " << value << std::endl;
+    std::cout << "Variable Declaration: " << variable_name << ", Type: " << type << ", Value: " << value << std::endl;
+}
+
+
+    void factor() {
+        if (tokens_[current_index_].type == IDENTIFIER) {
+            // Generate AST node for variable or constant
+            std::cout << "Factor: " << tokens_[current_index_].lexeme << std::endl;
+            consume(IDENTIFIER);
+        } else if (tokens_[current_index_].type == INT_LITERAL || tokens_[current_index_].type == DOUBLE_LITERAL ||
+                   tokens_[current_index_].type == STRING_LITERAL || tokens_[current_index_].type == CHAR_LITERAL ||
+                   tokens_[current_index_].type == TRUE || tokens_[current_index_].type == FALSE) {
+            // Generate AST node for constant
+            std::cout << "Factor: " << tokens_[current_index_].lexeme << std::endl;
+            consume(tokens_[current_index_].type);
+        } else {
+            std::cerr << "Error: Invalid factor type: " << tokens_[current_index_].type
+                      << " with lexeme: " << tokens_[current_index_].lexeme << std::endl;
+            exit(1);
+        }
     }
 
     void input_statement() {
@@ -109,19 +158,49 @@ private:
 
 int main() {
     std::vector<Token> tokens = {
-    {START, "START"},
-    {CHAR, "CHAR"},
-    {IDENTIFIER, "c"},
-    {ASSIGN, "="},
-    {STRING_LITERAL, "'x'"},
-    {SEMICOLON, ";"},
-    {PRINT, "PRINT"},
-    {LPAREN, "("},
-    {IDENTIFIER, "c"},
-    {RPAREN, ")"},
-    {SEMICOLON, ";"},
-    {END, "END"},
-};
+        {START, "START"},
+        {CHAR, "CHAR"},
+        {IDENTIFIER, "c"},
+        {ASSIGN, "="},
+        {STRING_LITERAL, "'x'"},
+        {SEMICOLON, ";"},
+        {INT, "INT"},
+        {IDENTIFIER, "a"},
+        {ASSIGN, "="},
+        {INT_LITERAL, "2"},
+        {SEMICOLON, ";"},
+        {DOUBLE, "DOUBLE"},
+        {IDENTIFIER, "b"},
+        {ASSIGN, "="},
+        {DOUBLE_LITERAL, "3.14"},
+        {SEMICOLON, ";"},
+        {BOOL, "BOOL"},
+        {IDENTIFIER, "flag"},
+        {ASSIGN, "="},
+        {TRUE, "True"},
+        {SEMICOLON, ";"},
+        {PRINT, "PRINT"},
+        {LPAREN, "("},
+        {IDENTIFIER, "c"},
+        {RPAREN, ")"},
+        {SEMICOLON, ";"},
+        {PRINT, "PRINT"},
+        {LPAREN, "("},
+        {IDENTIFIER, "a"},
+        {RPAREN, ")"},
+        {SEMICOLON, ";"},
+        {PRINT, "PRINT"},
+        {LPAREN, "("},
+        {IDENTIFIER, "b"},
+        {RPAREN, ")"},
+        {SEMICOLON, ";"},
+        {PRINT, "PRINT"},
+        {LPAREN, "("},
+        {IDENTIFIER, "flag"},
+        {RPAREN, ")"},
+        {SEMICOLON, ";"},
+        {END, "END"},
+    };
 
 
     ElysiumParser parser(tokens);
