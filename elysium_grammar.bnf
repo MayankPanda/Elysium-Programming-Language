@@ -1,0 +1,32 @@
+<program> ::= <statement>*
+<statement> ::= <print_statement> | <input_statement> | <assignment_statement> | <if_statement> | <for_loop> | <while_loop>
+
+<print_statement> ::= 'PRINT' <expression>
+<input_statement> ::= 'INPUT' <variable>
+<assignment_statement> ::= <variable> '=' <expression>
+
+<if_statement> ::= 'IF' '(' <boolean_expression> ')' '{' <statement>* '}' ('ELSE' '{' <statement>* '}')?
+
+<for_loop> ::= 'FOR' '(' <assignment_statement> ';' <boolean_expression> ';' <assignment_statement> ')' '{' <statement>* '}'
+
+<while_loop> ::= 'WHILE' '(' <boolean_expression> ')' '{' <statement>* '}'
+
+<boolean_expression> ::= <boolean_term> ( 'OR' <boolean_term> )*
+<boolean_term> ::= <boolean_factor> ( 'AND' <boolean_factor> )*
+<boolean_factor> ::= 'NOT' <boolean_factor> | '(' <boolean_expression> ')' | <comparison>
+
+<comparison> ::= <expression> ( '==' | '!=' | '<' | '>' | '<=' | '>=' ) <expression>
+
+<expression> ::= <term> ( ('+' | '-') <term> )*
+<term> ::= <factor> ( ('*' | '/' | '%') <factor> )*
+<factor> ::= <literal> | <variable> | '(' <expression> ')' | ('+' | '-') <factor>
+<variable> ::= <identifier>
+<identifier> ::= <letter> <letter_or_digit>*
+<letter> ::= [a-zA-Z]
+<letter_or_digit> ::= [a-zA-Z0-9]
+<literal> ::= <integer_literal> | <char_literal> | <double_literal> | <string_literal>
+<integer_literal> ::= [0-9]+
+<char_literal> ::= '<character>'
+<double_literal> ::= [0-9]+ '.' [0-9]+
+<string_literal> ::= '"' <string_characters> '"'
+<string_characters> ::= [^"]*
